@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>本地记录存档系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --base-font-size: 16px;
+            --heading-scale: 1.5;
+            --subheading-scale: 1.2;
+            --body-scale: 1;
+            --small-scale: 0.875;
+            
+            --spacing-xs: 0.5rem;
+            --spacing-sm: 1rem;
+            --spacing-md: 1.5rem;
+            --spacing-lg: 2rem;
+            --spacing-xl: 3rem;
+            
+            --container-max-width: 1200px;
+            --container-padding: 1.5rem;
+        }
+
+        html {
+            font-size: var(--base-font-size);
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e6e6e6;
+            min-height: 100vh;
+            padding: var(--spacing-sm);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: var(--container-max-width);
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: var(--spacing-lg);
+            padding: var(--spacing-md);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            color: #4cc9f0;
+            font-size: calc(var(--heading-scale) * 1rem);
+            margin-bottom: var(--spacing-xs);
+            line-height: 1.3;
+        }
+
+        .subtitle {
+            color: #a0a0a0;
+            font-size: calc(var(--subheading-scale) * 1rem);
+        }
+
+        .tab-navigation {
+            display: flex;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px 10px 0 0;
+            overflow: hidden;
+            margin-bottom: 0;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: var(--spacing-sm) var(--spacing-md);
+            background: transparent;
+            border: none;
+            color: #a0a0a0;
+            font-size: calc(var(--body-scale) * 1rem);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .tab-button.active {
+            background: rgba(255, 255, 255, 0.15);
+            color: #4cc9f0;
+            border-bottom: 3px solid #4cc9f0;
+        }
+
+        .tab-button:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.1);
+            color: #e6e6e6;
+        }
+
+        .tab-content {
+            display: none;
+            background: rgba(255, 255, 255, 0.08);
+            padding: var(--spacing-md);
+            border-radius: 0 0 15px 15px;
+            backdrop-filter: blur(10px);
+            min-height: 500px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .input-section, .records-section, .search-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: var(--spacing-md);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .search-section {
+            width: 100%;
+        }
+
+        .form-group {
+            margin-bottom: var(--spacing-md);
+        }
+
+        label {
+            display: block;
+            margin-bottom: var(--spacing-xs);
+            color: #4cc9f0;
+            font-weight: 600;
+            font-size: calc(var(--body-scale) * 1rem);
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: var(--spacing-sm);
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 8px;
+            color: #e6e6e6;
+            font-size: calc(var(--body-scale) * 1rem);
+            transition: all 0.3s ease;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #4cc9f0;
+            box-shadow: 0 0 0 2px rgba(76, 201, 240, 0.3);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .button-group {
+            display: flex;
+            gap: var(--spacing-sm);
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: var(--spacing-sm) var(--spacing-md);
+            border: none;
+            border-radius: 8px;
+            font-size: calc(var(--body-scale) * 1rem);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4cc9f0, #4361ee);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 201, 240, 0.5);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.15);
+            color: #e6e6e6;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f72585, #b5179e);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(247, 37, 133, 0.5);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f8961e, #f3722c);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(248, 150, 30, 0.5);
+        }
+
+        .records-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .record-item {
+            background: rgba(255, 255, 255, 0.08);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-sm);
+            border-radius: 10px;
+            border-left: 4px solid #4cc9f0;
+            transition: transform 0.2s ease;
+            cursor: pointer;
+        }
+
+        .record-item:hover {
+            transform: translateX(5px);
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .record-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .record-name {
+            font-weight: 600;
+            color: #4cc9f0;
+            font-size: calc(var(--subheading-scale) * 1rem);
+        }
+
+        .record-date {
+            color: #a0a0a0;
+            font-size: calc(var(--small-scale) * 1rem);
+        }
+
+        .record-content {
+            color: #cccccc;
+            line-height: 1.5;
+            max-height: 60px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: var(--spacing-xl);
+            color: #a0a0a0;
+        }
+
+        .file-input-group {
+            margin-top: var(--spacing-md);
+        }
+
+        .file-input {
+            background: rgba(255, 255, 255, 0.08);
+            padding: var(--spacing-sm);
+            border-radius: 8px;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .status-message {
+            padding: var(--spacing-sm);
+            border-radius: 5px;
+            margin: var(--spacing-sm) 0;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .status-success {
+            background: rgba(76, 175, 80, 0.3);
+            color: #4caf50;
+        }
+
+        .status-error {
+            background: rgba(244, 67, 54, 0.3);
+            color: #f44336;
+        }
+
+        .search-results {
+            margin-top: var(--spacing-md);
+        }
+
+        .search-highlight {
+            background-color: rgba(76, 201, 240, 0.4);
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        .search-stats {
+            color: #a0a0a0;
+            margin-bottom: var(--spacing-md);
+            font-size: calc(var(--small-scale) * 1rem);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+            padding: var(--spacing-sm);
+        }
+
+        .modal {
+            background: rgba(26, 26, 46, 0.95);
+            padding: var(--spacing-md);
+            border-radius: 15px;
+            width: 100%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .modal-title {
+            color: #4cc9f0;
+            margin-bottom: var(--spacing-md);
+            font-size: calc(var(--subheading-scale) * 1rem);
+            text-align: center;
+        }
+
+        .modal-content {
+            margin-bottom: var(--spacing-md);
+            line-height: 1.6;
+        }
+
+        .existing-record {
+            background: rgba(255, 255, 255, 0.08);
+            padding: var(--spacing-md);
+            border-radius: 8px;
+            margin: var(--spacing-md) 0;
+            border-left: 3px solid #f8961e;
+        }
+
+        .record-preview {
+            max-height: 150px;
+            overflow-y: auto;
+            margin-top: var(--spacing-sm);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: var(--spacing-sm);
+            flex-wrap: wrap;
+        }
+
+        .modal-btn {
+            flex: 1;
+            min-width: 100px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .record-detail {
+            background: rgba(255, 255, 255, 0.08);
+            padding: var(--spacing-md);
+            border-radius: 10px;
+            margin: var(--spacing-md) 0;
+        }
+
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-md);
+            padding-bottom: var(--spacing-sm);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            flex-wrap: wrap;
+        }
+
+        .detail-name {
+            font-size: calc(var(--subheading-scale) * 1rem);
+            font-weight: 600;
+            color: #4cc9f0;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .detail-date {
+            color: #a0a0a0;
+            font-size: calc(var(--small-scale) * 1rem);
+        }
+
+        .detail-content {
+            line-height: 1.6;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: var(--spacing-sm);
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+        }
+
+        .time-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: var(--spacing-md);
+            padding-top: var(--spacing-sm);
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            font-size: calc(var(--small-scale) * 1rem);
+            color: #a0a0a0;
+            flex-wrap: wrap;
+        }
+
+        .time-item {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .time-label {
+            font-size: calc(var(--small-scale) * 0.9rem);
+            margin-bottom: 3px;
+        }
+
+        .time-value {
+            font-weight: 600;
+            color: #e6e6e6;
+        }
+
+        .recent-records-container {
+            margin-top: var(--spacing-md);
+        }
+
+        .confirmation-modal .modal-content {
+            text-align: center;
+        }
+
+        .confirmation-icon {
+            font-size: 3em;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .confirmation-text {
+            font-size: calc(var(--body-scale) * 1rem);
+            margin-bottom: var(--spacing-md);
+            line-height: 1.6;
+        }
+
+        .confirmation-stats {
+            background: rgba(255, 255, 255, 0.08);
+            padding: var(--spacing-md);
+            border-radius: 8px;
+            margin: var(--spacing-md) 0;
+            border-left: 3px solid #f72585;
+        }
+
+        .export-options {
+            background: rgba(255, 255, 255, 0.08);
+            padding: var(--spacing-md);
+            border-radius: 8px;
+            margin: var(--spacing-md) 0;
+            border-left: 3px solid #4cc9f0;
+        }
+
+        .filename-preview {
+            background: rgba(0, 0, 0, 0.3);
+            padding: var(--spacing-sm);
+            border-radius: 5px;
+            margin-top: var(--spacing-sm);
+            font-family: monospace;
+            font-size: calc(var(--small-scale) * 1rem);
+            word-break: break-all;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            :root {
+                --base-font-size: 14px;
+                --container-padding: 1rem;
+            }
+            
+            body {
+                padding: var(--spacing-xs);
+            }
+            
+            .tab-button {
+                padding: var(--spacing-sm) var(--spacing-xs);
+                font-size: calc(var(--small-scale) * 1rem);
+            }
+            
+            .tab-content {
+                padding: var(--spacing-sm);
+            }
+            
+            .input-section, .records-section, .search-section {
+                padding: var(--spacing-sm);
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                margin-bottom: var(--spacing-xs);
+            }
+            
+            .modal {
+                padding: var(--spacing-sm);
+            }
+            
+            .detail-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .time-info {
+                flex-direction: column;
+            }
+            
+            .modal-buttons {
+                flex-direction: column;
+            }
+            
+            .modal-btn {
+                width: 100%;
+                margin-bottom: var(--spacing-xs);
+            }
+        }
+
+        @media (max-width: 480px) {
+            :root {
+                --base-font-size: 13px;
+            }
+            
+            h1 {
+                font-size: calc(var(--heading-scale) * 0.9rem);
+            }
+            
+            .tab-navigation {
+                flex-direction: column;
+            }
+            
+            .tab-button {
+                border-radius: 0;
+            }
+            
+            .tab-button:first-child {
+                border-radius: 10px 10px 0 0;
+            }
+            
+            .tab-button:last-child {
+                border-radius: 0 0 10px 10px;
+            }
+        }
+
+        @media (min-width: 1200px) {
+            :root {
+                --base-font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📁 本地记录存档系统</h1>
+            <p class="subtitle">安全、便捷的本地记录管理与存档解决方案</p>
+        </header>
+
+        <div class="tab-navigation">
+            <button class="tab-button active" onclick="switchTab('search-tab')">🔍 搜索记录</button>
+            <button class="tab-button" onclick="switchTab('add-tab')">➕ 添加记录</button>
+            <button class="tab-button" onclick="switchTab('view-tab')">📋 查看记录</button>
+        </div>
+
+        <!-- 搜索标签页 -->
+        <div id="search-tab" class="tab-content active">
+            <div class="search-section">
+                <h2>🔍 搜索记录</h2>
+                <div class="form-group">
+                    <label for="searchInput">搜索关键词</label>
+                    <input type="text" id="searchInput" placeholder="输入关键词搜索记录名称或内容..." oninput="performSearch()">
+                </div>
+                
+                <div class="search-stats" id="searchStats">
+                    输入关键词开始搜索...
+                </div>
+                
+                <!-- 最近记录容器 - 仅在搜索框为空时显示 -->
+                <div id="recent-records-container" class="recent-records-container">
+                    <h2>最近记录 (<span id="recentRecordCount">0</span>)</h2>
+                    <div class="records-list" id="recentRecordsList">
+                        <div class="empty-state">
+                            <p>暂无记录</p>
+                            <p>添加第一条记录开始使用</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 搜索结果容器 -->
+                <div class="search-results" id="searchResults" style="display: none;">
+                    <div class="empty-state">
+                        <p>等待搜索...</p>
+                        <p>在搜索框中输入关键词来查找记录</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 添加记录标签页 -->
+        <div id="add-tab" class="tab-content">
+            <div class="input-section">
+                <h2>添加新记录</h2>
+                <div class="form-group">
+                    <label for="recordName">名称 *</label>
+                    <input type="text" id="recordName" placeholder="输入记录名称" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="recordContent">内容 *</label>
+                    <textarea id="recordContent" placeholder="输入记录内容" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="recordDate">更新日期 *</label>
+                    <input type="date" id="recordDate" required>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="saveRecord()">💾 保存记录</button>
+                    <button class="btn btn-secondary" onclick="clearForm()">🗑️ 清除表单</button>
+                </div>
+
+                <div class="file-input-group">
+                    <h3>导入存档文件</h3>
+                    <div class="file-input">
+                        <input type="file" id="fileInput" accept=".txt" onchange="importRecords(this.files[0])">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 查看记录标签页 -->
+        <div id="view-tab" class="tab-content">
+            <div class="records-section">
+                <h2>所有记录 (<span id="recordCount">0</span>)</h2>
+                
+                <!-- 导出选项 -->
+                <div class="export-options">
+                    <h3>导出选项</h3>
+                    <div class="form-group">
+                        <label for="exportFileName">导出文件名</label>
+                        <input type="text" id="exportFileName" placeholder="输入自定义文件名（不含扩展名）" value="记录存档">
+                        <div class="filename-preview">
+                            预览: <span id="filenamePreview">记录存档_YYYY-MM-DD.txt</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick="exportRecords()">📤 导出存档</button>
+                    <button class="btn btn-danger" onclick="showClearConfirmation()">⚠️ 清除所有记录</button>
+                </div>
+                
+                <div class="records-list" id="recordsList">
+                    <div class="empty-state">
+                        <p>暂无记录</p>
+                        <p>添加第一条记录开始使用</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="statusMessage"></div>
+    </div>
+
+    <!-- 冲突处理模态框 -->
+    <div id="conflictModal" class="modal-overlay hidden">
+        <div class="modal">
+            <h3 class="modal-title">📝 记录名称冲突</h3>
+            <div class="modal-content">
+                <p>记录名称 "<span id="conflictName"></span>" 已存在，请选择处理方式：</p>
+                
+                <div class="existing-record">
+                    <strong>现有记录内容：</strong>
+                    <div class="record-preview" id="existingRecordContent"></div>
+                    <div><small>创建日期：<span id="existingRecordCreateDate"></span></small></div>
+                    <div><small>最后更新：<span id="existingRecordUpdateDate"></span></small></div>
+                </div>
+                
+                <div>
+                    <strong>新记录内容：</strong>
+                    <div class="record-preview" id="newRecordContent"></div>
+                </div>
+            </div>
+            
+            <div class="modal-buttons">
+                <button class="btn btn-secondary modal-btn" onclick="handleConflict('view')">👁️ 查看</button>
+                <button class="btn btn-warning modal-btn" onclick="handleConflict('update')">🔄 更新</button>
+                <button class="btn btn-primary modal-btn" onclick="handleConflict('append')">📎 追加</button>
+                <button class="btn btn-secondary modal-btn" onclick="hideConflictModal()">❌ 取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 记录详情模态框 -->
+    <div id="detailModal" class="modal-overlay hidden">
+        <div class="modal">
+            <h3 class="modal-title">📄 记录详情</h3>
+            <div class="modal-content">
+                <div class="record-detail">
+                    <div class="detail-header">
+                        <span class="detail-name" id="detailName"></span>
+                        <span class="detail-date" id="detailDate"></span>
+                    </div>
+                    <div class="detail-content" id="detailContent"></div>
+                    <div class="time-info">
+                        <div class="time-item">
+                            <span class="time-label">创建时间</span>
+                            <span class="time-value" id="detailCreateTime"></span>
+                        </div>
+                        <div class="time-item">
+                            <span class="time-label">最后更新时间</span>
+                            <span class="time-value" id="detailUpdateTime"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-buttons">
+                <button class="btn btn-danger modal-btn" id="deleteRecordBtn">🗑️ 删除记录</button>
+                <button class="btn btn-secondary modal-btn" onclick="hideDetailModal()">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 清除确认模态框 -->
+    <div id="clearConfirmationModal" class="modal-overlay hidden">
+        <div class="modal confirmation-modal">
+            <h3 class="modal-title">⚠️ 确认清除所有记录</h3>
+            <div class="modal-content">
+                <div class="confirmation-icon">🗑️</div>
+                <div class="confirmation-text">
+                    <p>您确定要清除所有记录吗？</p>
+                    <p>此操作将永久删除所有保存的记录，且无法撤销！</p>
+                </div>
+                <div class="confirmation-stats">
+                    <p><strong>将清除的记录数量：</strong> <span id="clearRecordCount">0</span> 条</p>
+                    <p><strong>操作类型：</strong> 永久删除</p>
+                    <p><strong>影响：</strong> 所有数据将无法恢复</p>
+                </div>
+            </div>
+            
+            <div class="modal-buttons">
+                <button class="btn btn-danger modal-btn" onclick="confirmClearAllRecords()">🗑️ 确认清除</button>
+                <button class="btn btn-secondary modal-btn" onclick="hideClearConfirmation()">❌ 取消</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化日期为今天
+        document.getElementById('recordDate').valueAsDate = new Date();
+
+        // 加载保存的记录
+        let records = JSON.parse(localStorage.getItem('recordArchive') || '[]');
+        // 迁移旧数据格式（如果存在）
+        migrateOldDataFormat();
+        
+        let currentConflictData = null;
+        let currentDetailRecord = null;
+        
+        updateRecordsDisplay();
+        updateRecentRecordsDisplay();
+        
+        // 初始化搜索标签页显示状态
+        performSearch();
+        
+        // 初始化文件名预览
+        updateFilenamePreview();
+
+        // 迁移旧数据格式（从单一日期字段迁移到创建时间和更新时间）
+        function migrateOldDataFormat() {
+            let needsMigration = false;
+            
+            for (let record of records) {
+                if (record.date && !record.createTime) {
+                    // 旧格式数据，迁移到新格式
+                    record.createTime = record.date;
+                    record.updateTime = record.date;
+                    needsMigration = true;
+                }
+            }
+            
+            if (needsMigration) {
+                localStorage.setItem('recordArchive', JSON.stringify(records));
+            }
+        }
+
+        // 标签页切换功能
+        function switchTab(tabId) {
+            // 隐藏所有标签页内容
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 移除所有标签按钮的激活状态
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            // 显示选中的标签页内容
+            document.getElementById(tabId).classList.add('active');
+            
+            // 激活对应的标签按钮
+            event.target.classList.add('active');
+            
+            // 如果是查看记录标签页，根据搜索框内容更新显示
+            if (tabId === 'view-tab') {
+                updateFilenamePreview();
+            }
+        }
+
+        function showStatus(message, type = 'success') {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.innerHTML = `<div class="status-message status-${type}">${message}</div>`;
+            setTimeout(() => statusDiv.innerHTML = '', 3000);
+        }
+
+        function saveRecord() {
+            const name = document.getElementById('recordName').value.trim();
+            const content = document.getElementById('recordContent').value.trim();
+            const date = document.getElementById('recordDate').value;
+            const currentTime = new Date().toISOString().split('T')[0];
+
+            if (!name || !content || !date) {
+                showStatus('请填写所有必填字段', 'error');
+                return;
+            }
+
+            // 检查是否已存在同名记录
+            const existingIndex = records.findIndex(record => record.name === name);
+            
+            if (existingIndex !== -1) {
+                // 显示冲突处理模态框
+                showConflictModal(name, content, date, existingIndex);
+            } else {
+                // 添加新记录
+                addNewRecord(name, content, date, currentTime);
+            }
+        }
+
+        function showConflictModal(name, newContent, newDate, existingIndex) {
+            const existingRecord = records[existingIndex];
+            
+            // 保存当前冲突数据
+            currentConflictData = {
+                name,
+                newContent,
+                newDate,
+                existingIndex
+            };
+            
+            // 更新模态框内容
+            document.getElementById('conflictName').textContent = name;
+            document.getElementById('existingRecordContent').textContent = existingRecord.content;
+            document.getElementById('existingRecordCreateDate').textContent = formatDate(existingRecord.createTime || existingRecord.date);
+            document.getElementById('existingRecordUpdateDate').textContent = formatDate(existingRecord.updateTime || existingRecord.date);
+            document.getElementById('newRecordContent').textContent = newContent;
+            
+            // 显示模态框
+            document.getElementById('conflictModal').classList.remove('hidden');
+        }
+
+        function hideConflictModal() {
+            document.getElementById('conflictModal').classList.add('hidden');
+            currentConflictData = null;
+        }
+
+        function handleConflict(action) {
+            if (!currentConflictData) return;
+            
+            const { name, newContent, newDate, existingIndex } = currentConflictData;
+            const existingRecord = records[existingIndex];
+            const currentTime = new Date().toISOString().split('T')[0];
+            
+            switch (action) {
+                case 'view':
+                    // 切换到查看标签页并显示详情
+                    hideConflictModal();
+                    switchTab('view-tab');
+                    showRecordDetail(existingRecord);
+                    showStatus(`已切换到查看模式，记录 "${name}" 未修改`);
+                    break;
+                    
+                case 'update':
+                    // 更新现有记录
+                    records[existingIndex] = { 
+                        name, 
+                        content: newContent, 
+                        date: newDate,
+                        createTime: existingRecord.createTime || existingRecord.date,
+                        updateTime: currentTime
+                    };
+                    saveAndUpdateDisplay(`记录 "${name}" 已更新`);
+                    break;
+                    
+                case 'append':
+                    // 追加内容到现有记录，保留原始创建时间
+                    records[existingIndex] = { 
+                        name, 
+                        content: existingRecord.content + '\n\n--- 追加内容 (' + formatDate(currentTime) + ') ---\n' + newContent, 
+                        date: newDate,
+                        createTime: existingRecord.createTime || existingRecord.date,
+                        updateTime: currentTime
+                    };
+                    saveAndUpdateDisplay(`记录 "${name}" 已追加内容`);
+                    break;
+            }
+            
+            hideConflictModal();
+        }
+
+        function addNewRecord(name, content, date, createTime) {
+            // 添加新记录
+            records.push({ 
+                name, 
+                content, 
+                date,
+                createTime: createTime,
+                updateTime: createTime
+            });
+            saveAndUpdateDisplay(`记录 "${name}" 已保存`);
+        }
+
+        function saveAndUpdateDisplay(message) {
+            // 按日期降序排序
+            records.sort((a, b) => new Date(b.updateTime || b.date) - new Date(a.updateTime || a.date));
+            
+            // 保存到本地存储
+            localStorage.setItem('recordArchive', JSON.stringify(records));
+            
+            // 更新所有显示
+            updateRecordsDisplay();
+            updateRecentRecordsDisplay();
+            clearForm();
+            
+            // 如果当前在搜索标签页，更新搜索显示
+            if (document.getElementById('search-tab').classList.contains('active')) {
+                performSearch();
+            }
+            
+            showStatus(message);
+        }
+
+        function clearForm() {
+            document.getElementById('recordName').value = '';
+            document.getElementById('recordContent').value = '';
+            document.getElementById('recordDate').valueAsDate = new Date();
+        }
+
+        function updateRecordsDisplay() {
+            const recordsList = document.getElementById('recordsList');
+            const recordCount = document.getElementById('recordCount');
+            
+            recordCount.textContent = records.length;
+
+            if (records.length === 0) {
+                recordsList.innerHTML = '<div class="empty-state"><p>暂无记录</p><p>添加第一条记录开始使用</p></div>';
+                return;
+            }
+
+            recordsList.innerHTML = records.map(record => `
+                <div class="record-item" onclick="showRecordDetail(${escapeHtml(JSON.stringify(record))})">
+                    <div class="record-header">
+                        <span class="record-name">${escapeHtml(record.name)}</span>
+                        <span class="record-date">${formatDate(record.updateTime || record.date)}</span>
+                    </div>
+                    <div class="record-content">${escapeHtml(record.content)}</div>
+                </div>
+            `).join('');
+        }
+
+        function updateRecentRecordsDisplay() {
+            const recentRecordsList = document.getElementById('recentRecordsList');
+            const recentRecordCount = document.getElementById('recentRecordCount');
+            const recentRecords = records.slice(0, 5); // 显示最近5条记录
+            
+            recentRecordCount.textContent = recentRecords.length;
+
+            if (recentRecords.length === 0) {
+                recentRecordsList.innerHTML = '<div class="empty-state"><p>暂无记录</p><p>添加第一条记录开始使用</p></div>';
+                return;
+            }
+
+            recentRecordsList.innerHTML = recentRecords.map(record => `
+                <div class="record-item" onclick="showRecordDetail(${escapeHtml(JSON.stringify(record))})">
+                    <div class="record-header">
+                        <span class="record-name">${escapeHtml(record.name)}</span>
+                        <span class="record-date">${formatDate(record.updateTime || record.date)}</span>
+                    </div>
+                    <div class="record-content">${escapeHtml(record.content)}</div>
+                </div>
+            `).join('');
+        }
+
+        function performSearch() {
+            const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
+            const searchResults = document.getElementById('searchResults');
+            const searchStats = document.getElementById('searchStats');
+            const recentRecordsContainer = document.getElementById('recent-records-container');
+            
+            if (!searchTerm) {
+                // 搜索框为空，显示最近记录，隐藏搜索结果
+                recentRecordsContainer.style.display = 'block';
+                searchResults.style.display = 'none';
+                searchStats.innerHTML = '显示最近记录';
+                return;
+            }
+
+            // 有关键词，隐藏最近记录，显示搜索结果
+            recentRecordsContainer.style.display = 'none';
+            searchResults.style.display = 'block';
+
+            const filteredRecords = records.filter(record => 
+                record.name.toLowerCase().includes(searchTerm) || 
+                record.content.toLowerCase().includes(searchTerm)
+            );
+
+            searchStats.innerHTML = `找到 ${filteredRecords.length} 条匹配记录（关键词：${escapeHtml(searchTerm)}）`;
+
+            if (filteredRecords.length === 0) {
+                searchResults.innerHTML = '<div class="empty-state"><p>未找到匹配的记录</p><p>尝试使用其他关键词搜索</p></div>';
+                return;
+            }
+
+            searchResults.innerHTML = filteredRecords.map(record => {
+                const highlightedName = highlightText(record.name, searchTerm);
+                const highlightedContent = highlightText(record.content, searchTerm);
+                
+                return `
+                    <div class="record-item" onclick="showRecordDetail(${escapeHtml(JSON.stringify(record))})">
+                        <div class="record-header">
+                            <span class="record-name">${highlightedName}</span>
+                            <span class="record-date">${formatDate(record.updateTime || record.date)}</span>
+                        </div>
+                        <div class="record-content">${highlightedContent}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function showRecordDetail(record) {
+            // 保存当前查看的记录
+            currentDetailRecord = record;
+            
+            document.getElementById('detailName').textContent = record.name;
+            document.getElementById('detailDate').textContent = formatDate(record.updateTime || record.date);
+            document.getElementById('detailContent').textContent = record.content;
+            document.getElementById('detailCreateTime').textContent = formatDateTime(record.createTime || record.date);
+            document.getElementById('detailUpdateTime').textContent = formatDateTime(record.updateTime || record.date);
+            
+            // 设置删除按钮事件
+            document.getElementById('deleteRecordBtn').onclick = function() {
+                deleteRecord(record);
+            };
+            
+            document.getElementById('detailModal').classList.remove('hidden');
+        }
+
+        function hideDetailModal() {
+            document.getElementById('detailModal').classList.add('hidden');
+            currentDetailRecord = null;
+        }
+
+        function deleteRecord(record) {
+            if (!record) return;
+            
+            if (confirm(`确定要删除记录 "${record.name}" 吗？此操作不可撤销！`)) {
+                const index = records.findIndex(r => r.name === record.name);
+                if (index !== -1) {
+                    records.splice(index, 1);
+                    localStorage.setItem('recordArchive', JSON.stringify(records));
+                    
+                    // 更新所有显示
+                    updateRecordsDisplay();
+                    updateRecentRecordsDisplay();
+                    
+                    // 如果当前在搜索标签页，更新搜索显示
+                    if (document.getElementById('search-tab').classList.contains('active')) {
+                        performSearch();
+                    }
+                    
+                    hideDetailModal();
+                    showStatus(`记录 "${record.name}" 已删除`);
+                }
+            }
+        }
+
+        // 更新文件名预览
+        function updateFilenamePreview() {
+            const fileNameInput = document.getElementById('exportFileName');
+            const previewSpan = document.getElementById('filenamePreview');
+            
+            fileNameInput.addEventListener('input', function() {
+                const customName = this.value.trim();
+                const today = new Date().toISOString().split('T')[0];
+                
+                if (customName) {
+                    previewSpan.textContent = `${customName}_${today}.txt`;
+                } else {
+                    previewSpan.textContent = `记录存档_${today}.txt`;
+                }
+            });
+            
+            // 初始预览
+            const today = new Date().toISOString().split('T')[0];
+            const customName = fileNameInput.value.trim();
+            previewSpan.textContent = customName ? `${customName}_${today}.txt` : `记录存档_${today}.txt`;
+        }
+
+        function exportRecords() {
+            if (records.length === 0) {
+                showStatus('没有记录可导出', 'error');
+                return;
+            }
+
+            const customFileName = document.getElementById('exportFileName').value.trim();
+            const today = new Date().toISOString().split('T')[0];
+            
+            // 确定最终文件名
+            let fileName;
+            if (customFileName) {
+                fileName = `${customFileName}_${today}.txt`;
+            } else {
+                fileName = `记录存档_${today}.txt`;
+            }
+
+            const dataStr = JSON.stringify(records, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'text/plain' });
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = fileName;
+            link.click();
+            
+            showStatus(`已导出 ${records.length} 条记录到 ${fileName}`);
+        }
+
+        function importRecords(file) {
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedRecords = JSON.parse(e.target.result);
+                    let addedCount = 0;
+                    let updatedCount = 0;
+
+                    importedRecords.forEach(importedRecord => {
+                        // 迁移导入的记录格式
+                        if (importedRecord.date && !importedRecord.createTime) {
+                            importedRecord.createTime = importedRecord.date;
+                            importedRecord.updateTime = importedRecord.date;
+                        }
+                        
+                        const existingIndex = records.findIndex(record => record.name === importedRecord.name);
+                        
+                        if (existingIndex !== -1) {
+                            // 更新现有记录
+                            records[existingIndex] = importedRecord;
+                            updatedCount++;
+                        } else {
+                            // 添加新记录
+                            records.push(importedRecord);
+                            addedCount++;
+                        }
+                    });
+
+                    // 重新排序
+                    records.sort((a, b) => new Date(b.updateTime || b.date) - new Date(a.updateTime || a.date));
+                    localStorage.setItem('recordArchive', JSON.stringify(records));
+                    updateRecordsDisplay();
+                    updateRecentRecordsDisplay();
+
+                    let message = '导入完成';
+                    if (addedCount > 0) message += `，新增 ${addedCount} 条记录`;
+                    if (updatedCount > 0) message += `，更新 ${updatedCount} 条记录`;
+                    
+                    showStatus(message);
+                    
+                } catch (error) {
+                    showStatus('文件格式错误，导入失败', 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function showClearConfirmation() {
+            if (records.length === 0) {
+                showStatus('没有记录可清除', 'error');
+                return;
+            }
+
+            document.getElementById('clearRecordCount').textContent = records.length;
+            document.getElementById('clearConfirmationModal').classList.remove('hidden');
+        }
+
+        function hideClearConfirmation() {
+            document.getElementById('clearConfirmationModal').classList.add('hidden');
+        }
+
+        function confirmClearAllRecords() {
+            records = [];
+            localStorage.removeItem('recordArchive');
+            updateRecordsDisplay();
+            updateRecentRecordsDisplay();
+            hideClearConfirmation();
+            showStatus('所有记录已清除');
+        }
+
+        function highlightText(text, searchTerm) {
+            if (!searchTerm) return escapeHtml(text);
+            
+            const regex = new RegExp(`(${escapeRegex(searchTerm)})`, 'gi');
+            return escapeHtml(text).replace(regex, '<span class="search-highlight">$1</span>');
+        }
+
+        function escapeRegex(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+        }
+
+        function formatDateTime(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+    </script>
+</body>
+</html>
