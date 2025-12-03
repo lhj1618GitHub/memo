@@ -17,7 +17,8 @@
 
 #### 文字记录存档界面
 
-![Uploading 文字记录.gif…]()
+![文字记录](https://github.com/user-attachments/assets/f295ed8e-ba2c-419c-86c2-3f123afcd91f)
+
 
 
 # 二：追剧进度管理器
