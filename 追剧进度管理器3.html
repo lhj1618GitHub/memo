@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>追剧进度管理器</title>
+    <style>
+        :root {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --bg-card: #3a3a3a;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --accent: #4a9cff;
+            --accent-hover: #3a8cef;
+            --danger: #ff4757;
+            --success: #2ed573;
+            --border: #555555;
+            --font-size-base: 16px; /* 基础字体大小 */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            font-size: var(--font-size-base);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h1 {
+            color: var(--accent);
+            margin-bottom: 10px;
+            font-size: 2.25em; /* 相对于基础字体大小 */
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .left-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .font-size-controls {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-right: 10px;
+            background-color: var(--bg-secondary);
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .font-size-btn {
+            background-color: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .font-size-btn:hover {
+            background-color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .font-size-display {
+            font-size: 0.9em;
+            color: var(--text-secondary);
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .search-container {
+            position: relative;
+        }
+
+        .search-input {
+            padding: 10px 35px 10px 10px;
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            width: 250px;
+            transition: border-color 0.3s;
+            font-size: 1em; /* 相对于基础字体大小 */
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+
+        .clear-search {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .clear-search:hover {
+            color: var(--text-primary);
+        }
+
+        button {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-weight: 500;
+            font-size: 1em; /* 相对于基础字体大小 */
+        }
+
+        button:hover {
+            background-color: var(--accent-hover);
+        }
+
+        button.danger {
+            background-color: var(--danger);
+        }
+
+        button.danger:hover {
+            background-color: #e03e4d;
+        }
+
+        .export-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            width: 200px;
+            font-size: 1em; /* 相对于基础字体大小 */
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-label {
+            background-color: var(--bg-secondary);
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: inline-block;
+            font-size: 1em; /* 相对于基础字体大小 */
+        }
+
+        .search-results {
+            margin-bottom: 15px;
+            color: var(--text-secondary);
+            font-size: 0.9em; /* 相对于基础字体大小 */
+        }
+
+        /* 表格样式 */
+        .shows-table-container {
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background-color: var(--bg-secondary);
+        }
+
+        .shows-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        .shows-table th {
+            background-color: var(--bg-card);
+            padding: 15px 10px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid var(--border);
+            font-size: 1.1em; /* 相对于基础字体大小 */
+        }
+
+        .shows-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+            font-size: 1em; /* 相对于基础字体大小 */
+        }
+
+        .shows-table tbody tr {
+            transition: background-color 0.2s;
+        }
+
+        .shows-table tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .show-name {
+            font-weight: 500;
+            cursor: pointer;
+            color: var(--accent);
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 1.1em; /* 相对于基础字体大小 */
+        }
+
+        .show-name:hover {
+            text-decoration: underline;
+        }
+
+        .progress-cell {
+            min-width: 150px;
+        }
+
+        .progress-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background-color: var(--bg-primary);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 5px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--accent);
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85em; /* 相对于基础字体大小 */
+            color: var(--text-secondary);
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 5px;
+            justify-content: flex-end;
+        }
+
+        .table-actions button {
+            padding: 5px 10px;
+            font-size: 0.85em; /* 相对于基础字体大小 */
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+            font-style: italic;
+            font-size: 1.1em; /* 相对于基础字体大小 */
+        }
+
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: var(--bg-card);
+            padding: 25px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.3em; /* 相对于基础字体大小 */
+            font-weight: 600;
+        }
+
+        .close {
+            font-size: 1.5em; /* 相对于基础字体大小 */
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .close:hover {
+            color: var(--text-primary);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            font-size: 1em; /* 相对于基础字体大小 */
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="url"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 1em; /* 相对于基础字体大小 */
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .duplicate-modal .options {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .duplicate-modal button {
+            flex: 1;
+        }
+
+        /* 更新日多选样式 */
+        .update-days {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .update-day-option {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 1em; /* 相对于基础字体大小 */
+        }
+
+        .update-day-option input[type="checkbox"] {
+            width: auto;
+        }
+
+        .optional {
+            color: var(--text-secondary);
+            font-weight: normal;
+        }
+
+        .import-options {
+            margin: 15px 0;
+            padding: 10px;
+            background-color: var(--bg-secondary);
+            border-radius: 5px;
+        }
+
+        .import-option {
+            margin: 10px 0;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+            }
+            
+            .left-controls {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .font-size-controls {
+                margin-right: 0;
+                margin-bottom: 10px;
+                justify-content: center;
+                width: 100%;
+            }
+            
+            .search-input {
+                width: 100%;
+            }
+            
+            .export-controls {
+                flex-direction: column;
+                align-items: flex-start;
+                width: 100%;
+            }
+            
+            input[type="text"] {
+                width: 100%;
+            }
+            
+            .shows-table {
+                font-size: 0.9em; /* 相对于基础字体大小 */
+            }
+            
+            .shows-table th,
+            .shows-table td {
+                padding: 8px 5px;
+            }
+            
+            .table-actions {
+                flex-direction: column;
+            }
+            
+            .duplicate-modal .options {
+                flex-direction: column;
+            }
+            
+            .update-days {
+                flex-direction: column;
+                gap: 5px;
+            }
+        }
+
+        /* 字体大小级别 */
+        .font-size-small {
+            --font-size-base: 14px;
+        }
+
+        .font-size-medium {
+            --font-size-base: 16px;
+        }
+
+        .font-size-large {
+            --font-size-base: 18px;
+        }
+
+        .font-size-xlarge {
+            --font-size-base: 20px;
+        }
+    </style>
+</head>
+<body class="font-size-medium">
+    <header>
+        <h1>追剧进度管理器</h1>
+        <p>记录您的追剧进度，随时备份和恢复数据</p>
+    </header>
+
+    <div class="controls">
+        <div class="left-controls">
+            <div class="font-size-controls">
+                <button class="font-size-btn" id="font-decrease" title="减小字体">-</button>
+                <span class="font-size-display" id="font-size-display">中</span>
+                <button class="font-size-btn" id="font-increase" title="增大字体">+</button>
+            </div>
+            <div class="search-container">
+                <input type="text" id="search-input" placeholder="搜索剧集..." class="search-input">
+                <div class="search-icon">🔍</div>
+                <button class="clear-search" id="clear-search" style="display: none;">×</button>
+            </div>
+            <button id="add-show-btn">添加新剧集</button>
+        </div>
+        <div class="export-controls">
+            <button id="export-btn">导出数据</button>
+            <label for="import-file" class="file-label">导入数据</label>
+            <input type="file" id="import-file" accept=".json">
+        </div>
+    </div>
+
+    <div class="search-results" id="search-results">
+        <!-- 搜索结果信息将通过JavaScript动态生成 -->
+    </div>
+
+    <div class="shows-table-container">
+        <table class="shows-table" id="shows-table">
+            <thead>
+                <tr>
+                    <th>剧集名称</th>
+                    <th>更新日</th>
+                    <th>进度</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody id="shows-tbody">
+                <!-- 剧集行将通过JavaScript动态生成 -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 添加/编辑剧集的模态框 -->
+    <div class="modal" id="show-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-title">添加新剧集</h2>
+                <span class="close">&times;</span>
+            </div>
+            <form id="show-form">
+                <input type="hidden" id="edit-index">
+                <div class="form-group">
+                    <label for="show-name">剧集名称 <span class="optional">(必填)</span></label>
+                    <input type="text" id="show-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="current-episode">当前进度（集数） <span class="optional">(必填)</span></label>
+                    <input type="number" id="current-episode" min="0" value="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="total-episodes">总集数 <span class="optional">(选填)</span></label>
+                    <input type="number" id="total-episodes" min="0" placeholder="留空表示未知">
+                </div>
+                <div class="form-group">
+                    <label>更新日 <span class="optional">(可多选)</span></label>
+                    <div class="update-days">
+                        <label class="update-day-option">
+                            <input type="checkbox" name="update-day" value="周一"> 周一
+                        </label>
+                        <label class="update-day-option">
+                            <input type="checkbox" name="update-day" value="周二"> 周二
+                        </label>
+                        <label class="update-day-option">
+                            <input type="checkbox" name="update-day" value="周三"> 周三
+                        </label>
+                        <label class="update-day-option">
+                            <input type="checkbox" name="update-day" value="周四"> 周四
+                        </label>
+                        <label class="update-day-option">
+                            <input type="checkbox" name="update-day" value="周五"> 周五
+                        </label>
+                        <label class="update-day-option">
+                            <input type="checkbox" name="update-day" value="周六"> 周六
+                        </label>
+                        <label class="update-day-option">
+                            <input type="checkbox" name="update-day" value="周日"> 周日
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="show-link">链接地址 <span class="optional">(选填)</span></label>
+                    <input type="url" id="show-link" placeholder="https://">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="cancel-btn">取消</button>
+                    <button type="submit" id="save-btn">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 重复剧集提示模态框 -->
+    <div class="modal duplicate-modal" id="duplicate-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">剧集已存在</h2>
+                <span class="close">&times;</span>
+            </div>
+            <p>已存在同名剧集，您希望：</p>
+            <div class="options">
+                <button id="view-duplicate">查看现有剧集</button>
+                <button id="edit-duplicate">编辑这个剧集</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 导入选项模态框 -->
+    <div class="modal" id="import-options-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">导入选项</h2>
+                <span class="close">&times;</span>
+            </div>
+            <p>请选择导入方式：</p>
+            <div class="import-options">
+                <div class="import-option">
+                    <input type="radio" id="import-overwrite" name="import-option" value="overwrite" checked>
+                    <label for="import-overwrite">覆盖导入 - 清空现有数据，完全使用导入文件</label>
+                </div>
+                <div class="import-option">
+                    <input type="radio" id="import-merge" name="import-option" value="merge">
+                    <label for="import-merge">合并导入 - 保留集数较大的剧集，合并不同剧集</label>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" id="cancel-import-btn">取消</button>
+                <button type="button" id="confirm-import-btn">确认导入</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 剧集数据模型
+        let tvShows = JSON.parse(localStorage.getItem('tvShows')) || [];
+        let currentDuplicateIndex = -1;
+        let pendingImportData = null;
+        let currentSearchTerm = '';
+        
+        // 字体大小设置
+        const fontSizeSettings = {
+            'small': { class: 'font-size-small', display: '小', value: 14 },
+            'medium': { class: 'font-size-medium', display: '中', value: 16 },
+            'large': { class: 'font-size-large', display: '大', value: 18 },
+            'xlarge': { class: 'font-size-xlarge', display: '特大', value: 20 }
+        };
+        const fontSizeLevels = ['small', 'medium', 'large', 'xlarge'];
+        let currentFontSize = localStorage.getItem('fontSize') || 'medium';
+
+        // DOM元素
+        const showsTbody = document.getElementById('shows-tbody');
+        const searchInput = document.getElementById('search-input');
+        const clearSearchBtn = document.getElementById('clear-search');
+        const searchResults = document.getElementById('search-results');
+        const addShowBtn = document.getElementById('add-show-btn');
+        const exportBtn = document.getElementById('export-btn');
+        const importFile = document.getElementById('import-file');
+        const showModal = document.getElementById('show-modal');
+        const duplicateModal = document.getElementById('duplicate-modal');
+        const importOptionsModal = document.getElementById('import-options-modal');
+        const showForm = document.getElementById('show-form');
+        const modalTitle = document.getElementById('modal-title');
+        const closeButtons = document.querySelectorAll('.close');
+        const cancelBtn = document.getElementById('cancel-btn');
+        const viewDuplicateBtn = document.getElementById('view-duplicate');
+        const editDuplicateBtn = document.getElementById('edit-duplicate');
+        const cancelImportBtn = document.getElementById('cancel-import-btn');
+        const confirmImportBtn = document.getElementById('confirm-import-btn');
+        const fontDecreaseBtn = document.getElementById('font-decrease');
+        const fontIncreaseBtn = document.getElementById('font-increase');
+        const fontSizeDisplay = document.getElementById('font-size-display');
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            applyFontSize(currentFontSize);
+            renderShows();
+            setupEventListeners();
+        });
+
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 搜索功能
+            searchInput.addEventListener('input', (e) => {
+                currentSearchTerm = e.target.value.trim().toLowerCase();
+                updateClearButton();
+                renderShows();
+            });
+            
+            clearSearchBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                currentSearchTerm = '';
+                updateClearButton();
+                renderShows();
+            });
+            
+            // 字体大小控制
+            fontDecreaseBtn.addEventListener('click', decreaseFontSize);
+            fontIncreaseBtn.addEventListener('click', increaseFontSize);
+            
+            addShowBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                openModal();
+            });
+            
+            exportBtn.addEventListener('click', exportData);
+            importFile.addEventListener('change', handleImportFileSelect);
+            showForm.addEventListener('submit', saveShow);
+            cancelBtn.addEventListener('click', closeModal);
+            viewDuplicateBtn.addEventListener('click', viewDuplicate);
+            editDuplicateBtn.addEventListener('click', editDuplicate);
+            cancelImportBtn.addEventListener('click', cancelImport);
+            confirmImportBtn.addEventListener('click', confirmImport);
+            
+            // 关闭模态框
+            closeButtons.forEach(button => {
+                button.addEventListener('click', closeModal);
+            });
+            
+            // 点击模态框外部关闭
+            window.addEventListener('click', (e) => {
+                if (e.target === showModal || e.target === duplicateModal || e.target === importOptionsModal) {
+                    closeModal();
+                }
+            });
+        }
+
+        // 应用字体大小设置
+        function applyFontSize(size) {
+            // 移除所有字体大小类
+            document.body.classList.remove('font-size-small', 'font-size-medium', 'font-size-large', 'font-size-xlarge');
+            // 添加当前字体大小类
+            document.body.classList.add(fontSizeSettings[size].class);
+            // 更新显示文本
+            fontSizeDisplay.textContent = fontSizeSettings[size].display;
+            // 保存到本地存储
+            localStorage.setItem('fontSize', size);
+            currentFontSize = size;
+            
+            // 更新按钮状态
+            updateFontButtonsState();
+        }
+
+        // 减小字体大小
+        function decreaseFontSize() {
+            const currentIndex = fontSizeLevels.indexOf(currentFontSize);
+            if (currentIndex > 0) {
+                applyFontSize(fontSizeLevels[currentIndex - 1]);
+            }
+        }
+
+        // 增大字体大小
+        function increaseFontSize() {
+            const currentIndex = fontSizeLevels.indexOf(currentFontSize);
+            if (currentIndex < fontSizeLevels.length - 1) {
+                applyFontSize(fontSizeLevels[currentIndex + 1]);
+            }
+        }
+
+        // 更新字体按钮状态
+        function updateFontButtonsState() {
+            const currentIndex = fontSizeLevels.indexOf(currentFontSize);
+            fontDecreaseBtn.disabled = currentIndex === 0;
+            fontIncreaseBtn.disabled = currentIndex === fontSizeLevels.length - 1;
+            
+            // 添加/移除禁用样式
+            if (fontDecreaseBtn.disabled) {
+                fontDecreaseBtn.style.opacity = '0.5';
+                fontDecreaseBtn.style.cursor = 'not-allowed';
+            } else {
+                fontDecreaseBtn.style.opacity = '1';
+                fontDecreaseBtn.style.cursor = 'pointer';
+            }
+            
+            if (fontIncreaseBtn.disabled) {
+                fontIncreaseBtn.style.opacity = '0.5';
+                fontIncreaseBtn.style.cursor = 'not-allowed';
+            } else {
+                fontIncreaseBtn.style.opacity = '1';
+                fontIncreaseBtn.style.cursor = 'pointer';
+            }
+        }
+
+        // 更新清除搜索按钮的显示状态
+        function updateClearButton() {
+            clearSearchBtn.style.display = currentSearchTerm ? 'flex' : 'none';
+        }
+
+        // 过滤剧集列表
+        function filterShows() {
+            if (!currentSearchTerm) {
+                return tvShows;
+            }
+            
+            return tvShows.filter(show => 
+                show.name.toLowerCase().includes(currentSearchTerm)
+            );
+        }
+
+        // 渲染剧集列表为表格
+        function renderShows() {
+            const filteredShows = filterShows();
+            showsTbody.innerHTML = '';
+            
+            // 更新搜索结果信息
+            if (currentSearchTerm) {
+                if (filteredShows.length === 0) {
+                    searchResults.innerHTML = `<p>没有找到包含"<strong>${escapeHtml(currentSearchTerm)}</strong>"的剧集</p>`;
+                } else {
+                    searchResults.innerHTML = `<p>找到 ${filteredShows.length} 个包含"<strong>${escapeHtml(currentSearchTerm)}</strong>"的剧集</p>`;
+                }
+            } else {
+                searchResults.innerHTML = '';
+            }
+            
+            if (filteredShows.length === 0) {
+                if (tvShows.length === 0) {
+                    showsTbody.innerHTML = '<tr><td colspan="4" class="no-results">暂无追剧记录，点击"添加新剧集"开始记录</td></tr>';
+                } else if (currentSearchTerm) {
+                    showsTbody.innerHTML = '<tr><td colspan="4" class="no-results">没有找到匹配的剧集，请尝试其他关键词</td></tr>';
+                } else {
+                    showsTbody.innerHTML = '<tr><td colspan="4" class="no-results">暂无追剧记录，点击"添加新剧集"开始记录</td></tr>';
+                }
+                return;
+            }
+            
+            filteredShows.forEach((show, index) => {
+                // 找到原始索引
+                const originalIndex = tvShows.findIndex(s => s.name === show.name);
+                
+                const totalEpisodes = show.totalEpisodes || 0;
+                const progress = totalEpisodes > 0 ? 
+                    Math.min(100, Math.round((show.currentEpisode / totalEpisodes) * 100)) : 0;
+                const progressText = totalEpisodes > 0 ? 
+                    `${show.currentEpisode}/${totalEpisodes}` : 
+                    `${show.currentEpisode}集`;
+                
+                const row = document.createElement('tr');
+                row.setAttribute('data-index', originalIndex);
+                row.innerHTML = `
+                    <td>
+                        <div class="show-name" data-index="${originalIndex}" title="${escapeHtml(show.name)}${show.link ? ' (点击打开链接)' : ''}">
+                            ${escapeHtml(show.name)}
+                        </div>
+                    </td>
+                    <td>${show.updateDays && show.updateDays.length > 0 ? show.updateDays.join('、') : '不固定'}</td>
+                    <td class="progress-cell">
+                        <div class="progress-container">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${progress}%"></div>
+                            </div>
+                            <div class="progress-text">${progressText}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="table-actions">
+                            <button class="edit-btn" data-index="${originalIndex}">编辑</button>
+                            <button class="progress-btn" data-index="${originalIndex}">+1</button>
+                            <button class="delete-btn danger" data-index="${originalIndex}">删除</button>
+                        </div>
+                    </td>
+                `;
+                
+                // 添加剧集名称点击事件（打开链接）
+                const showNameElement = row.querySelector('.show-name');
+                if (show.link) {
+                    showNameElement.style.cursor = 'pointer';
+                    showNameElement.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        window.open(show.link, '_blank');
+                    });
+                }
+                
+                showsTbody.appendChild(row);
+            });
+            
+            // 添加表格行的事件监听
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const index = parseInt(e.target.getAttribute('data-index'));
+                    openModal(index);
+                });
+            });
+            
+            document.querySelectorAll('.progress-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const index = parseInt(e.target.getAttribute('data-index'));
+                    updateProgress(index, 1);
+                });
+            });
+            
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const index = parseInt(e.target.getAttribute('data-index'));
+                    deleteShow(index);
+                });
+            });
+        }
+
+        // 打开添加/编辑模态框
+        function openModal(index = -1) {
+            const modal = document.getElementById('show-modal');
+            const form = document.getElementById('show-form');
+            
+            if (index === -1) {
+                // 添加新剧集
+                modalTitle.textContent = '添加新剧集';
+                form.reset();
+                document.getElementById('edit-index').value = '-1';
+                document.getElementById('current-episode').value = '0';
+                document.getElementById('total-episodes').value = '';
+                
+                // 清除所有更新日复选框
+                document.querySelectorAll('input[name="update-day"]').forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+            } else {
+                // 编辑现有剧集
+                modalTitle.textContent = '编辑剧集';
+                const show = tvShows[index];
+                document.getElementById('show-name').value = show.name;
+                document.getElementById('current-episode').value = show.currentEpisode;
+                document.getElementById('total-episodes').value = show.totalEpisodes || '';
+                document.getElementById('show-link').value = show.link || '';
+                document.getElementById('edit-index').value = index;
+                
+                // 设置更新日复选框
+                document.querySelectorAll('input[name="update-day"]').forEach(checkbox => {
+                    checkbox.checked = show.updateDays && show.updateDays.includes(checkbox.value);
+                });
+            }
+            
+            modal.classList.add('active');
+            document.getElementById('show-name').focus();
+        }
+
+        // 关闭所有模态框
+        function closeModal() {
+            showModal.classList.remove('active');
+            duplicateModal.classList.remove('active');
+            importOptionsModal.classList.remove('active');
+        }
+
+        // 取消导入
+        function cancelImport() {
+            closeModal();
+            pendingImportData = null;
+            importFile.value = '';
+        }
+
+        // 确认导入
+        function confirmImport() {
+            if (!pendingImportData) {
+                alert('导入数据无效');
+                return;
+            }
+            
+            const importOption = document.querySelector('input[name="import-option"]:checked').value;
+            
+            if (importOption === 'overwrite') {
+                // 覆盖导入
+                tvShows = pendingImportData;
+            } else {
+                // 合并导入 - 保留集数较大的剧集
+                const mergedShows = [...tvShows];
+                
+                pendingImportData.forEach(importedShow => {
+                    const existingIndex = mergedShows.findIndex(show => 
+                        show.name.toLowerCase() === importedShow.name.toLowerCase()
+                    );
+                    
+                    if (existingIndex !== -1) {
+                        // 比较集数，保留较大的
+                        if (importedShow.currentEpisode > mergedShows[existingIndex].currentEpisode) {
+                            mergedShows[existingIndex] = importedShow;
+                        }
+                    } else {
+                        // 新剧集，直接添加
+                        mergedShows.push(importedShow);
+                    }
+                });
+                
+                tvShows = mergedShows;
+            }
+            
+            // 确保兼容旧数据格式
+            tvShows.forEach(show => {
+                if (show.updateDay && !show.updateDays) {
+                    show.updateDays = [show.updateDay];
+                    delete show.updateDay;
+                }
+            });
+            
+            saveToStorage();
+            renderShows();
+            closeModal();
+            alert('数据导入成功！');
+            
+            // 重置
+            pendingImportData = null;
+            importFile.value = '';
+        }
+
+        // 处理导入文件选择
+        function handleImportFileSelect(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                try {
+                    const importedData = JSON.parse(event.target.result);
+                    
+                    if (Array.isArray(importedData)) {
+                        // 简单验证导入的数据结构
+                        const isValid = importedData.every(item => 
+                            item.name && 
+                            typeof item.currentEpisode === 'number'
+                        );
+                        
+                        if (isValid) {
+                            pendingImportData = importedData;
+                            // 显示导入选项模态框
+                            importOptionsModal.classList.add('active');
+                        } else {
+                            alert('导入的文件格式不正确');
+                        }
+                    } else {
+                        alert('导入的文件格式不正确');
+                    }
+                } catch (error) {
+                    alert('导入文件时出错：' + error.message);
+                }
+            };
+            
+            reader.readAsText(file);
+        }
+
+        // 保存剧集
+        function saveShow(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('show-name').value.trim();
+            const currentEpisode = parseInt(document.getElementById('current-episode').value);
+            const totalEpisodesInput = document.getElementById('total-episodes').value;
+            const totalEpisodes = totalEpisodesInput ? parseInt(totalEpisodesInput) : 0;
+            const link = document.getElementById('show-link').value.trim();
+            const editIndex = parseInt(document.getElementById('edit-index').value);
+            
+            // 获取选中的更新日
+            const updateDays = [];
+            document.querySelectorAll('input[name="update-day"]:checked').forEach(checkbox => {
+                updateDays.push(checkbox.value);
+            });
+            
+            // 验证数据
+            if (!name) {
+                alert('请输入剧集名称');
+                return;
+            }
+            
+            if (currentEpisode < 0) {
+                alert('当前进度不能为负数');
+                return;
+            }
+            
+            if (totalEpisodes < 0) {
+                alert('总集数不能为负数');
+                return;
+            }
+            
+            if (totalEpisodes > 0 && currentEpisode > totalEpisodes) {
+                alert('当前进度不能超过总集数');
+                return;
+            }
+            
+            const newShow = {
+                name,
+                currentEpisode,
+                totalEpisodes: totalEpisodes || null,
+                updateDays: updateDays.length > 0 ? updateDays : null,
+                link: link || null
+            };
+            
+            // 检查是否已存在同名剧集（编辑时排除自身）
+            const existingIndex = tvShows.findIndex((show, idx) => 
+                show.name.toLowerCase() === name.toLowerCase() && idx !== editIndex
+            );
+            
+            if (existingIndex !== -1 && editIndex === -1) {
+                // 添加新剧集时发现重复
+                currentDuplicateIndex = existingIndex;
+                duplicateModal.classList.add('active');
+                showModal.classList.remove('active');
+                return;
+            }
+            
+            if (editIndex === -1) {
+                // 添加新剧集
+                tvShows.push(newShow);
+            } else {
+                // 编辑现有剧集
+                tvShows[editIndex] = newShow;
+            }
+            
+            saveToStorage();
+            renderShows();
+            closeModal();
+        }
+
+        // 查看重复剧集
+        function viewDuplicate() {
+            closeModal();
+            alert(`已存在同名剧集："${tvShows[currentDuplicateIndex].name}"`);
+        }
+
+        // 编辑重复剧集
+        function editDuplicate() {
+            closeModal();
+            openModal(currentDuplicateIndex);
+        }
+
+        // 更新进度
+        function updateProgress(index, increment) {
+            if (index >= 0 && index < tvShows.length) {
+                const show = tvShows[index];
+                const maxEpisodes = show.totalEpisodes || Infinity;
+                show.currentEpisode = Math.min(show.currentEpisode + increment, maxEpisodes);
+                saveToStorage();
+                renderShows();
+            }
+        }
+
+        // 删除剧集
+        function deleteShow(index) {
+            if (confirm(`确定要删除"${tvShows[index].name}"吗？`)) {
+                tvShows.splice(index, 1);
+                saveToStorage();
+                renderShows();
+            }
+        }
+
+        // 导出数据
+        function exportData() {
+            const dataStr = JSON.stringify(tvShows, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            
+            // 生成当前时间字符串
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            
+            const filename = `追剧备份${year}${month}${day}${hours}${minutes}`;
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${filename}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        // 保存到本地存储
+        function saveToStorage() {
+            localStorage.setItem('tvShows', JSON.stringify(tvShows));
+        }
+
+        // HTML转义函数
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
