@@ -17,7 +17,8 @@
 
 #### 文字记录存档界面
 
-![文字记录](https://github.com/user-attachments/assets/f295ed8e-ba2c-419c-86c2-3f123afcd91f)
+![文字](https://github.com/user-attachments/assets/5d069f35-0ca1-4e7c-8aff-417103029119)
+
 
 
 
