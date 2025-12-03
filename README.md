@@ -31,4 +31,5 @@
 
 #### 追剧界面
 
-<img width="1061" height="816" alt="image" src="https://github.com/user-attachments/assets/5ad71374-6dd5-4884-be86-a82cebfe823a" />
+<img width="1093" height="860" alt="image" src="https://github.com/user-attachments/assets/f90ac49d-1c69-42cb-8f8f-50b46d46a562" />
+
