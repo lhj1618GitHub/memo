@@ -17,7 +17,8 @@
 
 #### 文字记录存档界面
 
-![文字](https://github.com/user-attachments/assets/5d069f35-0ca1-4e7c-8aff-417103029119)
+![gif-maker-1764749975307](https://github.com/user-attachments/assets/885ce282-70ab-4bd9-9c3d-d4215ef944d1)
+
 
 
 
