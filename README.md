@@ -33,3 +33,11 @@
 
 <img width="1093" height="860" alt="image" src="https://github.com/user-attachments/assets/f90ac49d-1c69-42cb-8f8f-50b46d46a562" />
 
+
+# 三：本地TXT文件编辑
+
+#### 介绍三
+
+在本地修改/新建txt文件，并保存。在移动设备快速使用。
+
+<img width="1137" height="641" alt="image" src="https://github.com/user-attachments/assets/1097d6e7-0b52-4a88-98b5-dbd0dc879bd4" />
