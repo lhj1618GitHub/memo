@@ -1,5 +1,4 @@
-# memo
-同步-[Gitee](https://gitee.com/lhj1618/memo)
+# memo - 同步 - [Gitee](https://gitee.com/lhj1618/memo)
 
 #  注意：清除浏览器数据前先导出记录到本地
 
