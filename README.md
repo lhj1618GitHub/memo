@@ -1,6 +1,5 @@
 # memo
-
-
+同步-[Gitee](https://gitee.com/lhj1618/memo)
 
 #  注意：清除浏览器数据前先导出记录到本地
 
@@ -19,10 +18,6 @@
 
 ![gif-maker-1764749975307](https://github.com/user-attachments/assets/885ce282-70ab-4bd9-9c3d-d4215ef944d1)
 
-
-
-
-
 # 二：追剧进度管理器
 
 #### 介绍二
@@ -32,7 +27,6 @@
 #### 追剧界面
 
 <img width="1093" height="860" alt="image" src="https://github.com/user-attachments/assets/f90ac49d-1c69-42cb-8f8f-50b46d46a562" />
-
 
 # 三：本地TXT文件编辑
 
