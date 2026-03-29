@@ -1,4 +1,4 @@
-# memo - 同步 - [Gitee](https://gitee.com/lhj1618/memo)
+# memo - 同步 - [Gitee](https://gitee.com/lhj1618/memo) - [html文件预览仓库](https://github.com/lhj1618GitHub/html)
 
 #  注意：清除浏览器数据前先导出记录到本地
 
